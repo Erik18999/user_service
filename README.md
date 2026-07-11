@@ -2,7 +2,7 @@
 
 ## Описание
 
-Микросервис управления пользователями в проекте **CorporationX** — социальной сети для стартаперов и IT-специалистов. Отвечает за профили пользователей, менторство, цели (goals), навыки (skills), премиум-доступ, рекомендации и загрузку аватаров.
+Микросервис для управления пользователями в веб-приложении **CorporationX** — социальной сети для стартаперов, IT-специалистов и обычных пользователей. Отвечает за профили пользователей, менторство, цели (goals), навыки (skills), организацию/участие в событиях (events), премиум-доступ, подписки на других пользователей, рекомендации и загрузку аватаров.
 
 ## Реализованные фичи
 
@@ -11,7 +11,6 @@
 
 - [`MentorshipController`](src/main/java/school/faang/user_service/controller/mentorship/MentorshipController.java)
 - [`MentorshipServiceImpl`](src/main/java/school/faang/user_service/service/impl/MentorshipServiceImpl.java)
-- [`MentorshipMapper`](src/main/java/school/faang/user_service/mapper/mentorship/MentorshipMapper.java)
 
 **Технологии:** Spring Web, Spring Data JPA, MapStruct, Lombok, JUnit 5 + Mockito
 
