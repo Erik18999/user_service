@@ -63,7 +63,9 @@
 - Liquibase
 - JUnit 5, Mockito
 
-Конфигурация вынесена в типобезопасные [`@ConfigurationProperties`](src/main/resources/application.yaml)-классы ([`S3Properties`](src/main/java/school/faang/user_service/config/properties/S3Properties.java), [`RedisConfigurationProperties`](src/main/java/school/faang/user_service/config/RedisConfigurationProperties.java)), подключаемые через `@EnableConfigurationProperties` в [`UserServiceApplication`](src/main/java/school/faang/user_service/UserServiceApplication.java).
+Конфигурация вынесена в типобезопасные `@ConfigurationProperties`-классы ([`S3Properties`](src/main/java/school/faang/user_service/config/properties/S3Properties.java), [`RedisConfigurationProperties`](src/main/java/school/faang/user_service/config/RedisConfigurationProperties.java)), подключаемые через `@EnableConfigurationProperties` в [`UserServiceApplication`](src/main/java/school/faang/user_service/UserServiceApplication.java).
+
+Все настройки сервиса (подключение к БД, Redis, MinIO, Feign-клиенты, cron-выражения и т.д.) собраны в одном файле: [`application.yaml`](src/main/resources/application.yaml).
 
 ## Запуск
 
