@@ -2,23 +2,22 @@
 
 ## Описание
 
-Микросервис для управления пользователями в веб-приложении **CorporationX** — социальной сети для создателей стартапов, IT-специалистов и обычных пользователей. Отвечает за профили пользователей, менторство, цели (goals), навыки (skills), организацию/участие в событиях (events), премиум-доступ, подписки на других пользователей, рекомендации(для достижения целей), загрузку аватаров пользователей.
+Микросервис для управления пользователями в веб-приложении **CorporationX** — социальной сети для создателей стартапов, IT-специалистов и обычных пользователей. Отвечает за профили пользователей, менторство, цели (goals), навыки (skills), организацию/участие в событиях (events), премиум-доступ, подписки на других пользователей, рекомендации (для достижения целей), загрузку аватаров пользователей.
 
 ## Реализованные фичи
 
 ### 1. Уведомление о достижении цели (event-driven, Publisher)
-При завершении пользователем цели в `user_service` публикуется событие в Redis-топик `goalCompletedChannel`. Событие асинхронно потребляется в `notification_service` (Listener), который отправляет уведомление пользователю. Реализована валидация состояния цели (уже завершена / не назначена пользователю), автоматическое обновление навыков пользователя по завершённой цели, кастомная обработка ошибок публикации.
+Пользователи приложения CorporationX могут участвовать в различных Проектах. В рамках проекта участники могут назначить себе конкретную цель. При завершении пользователем цели в `user_service` публикуется событие в Redis-топик `goalCompletedChannel`. Событие асинхронно потребляется в `notification_service` (Listener), который отправляет уведомление пользователю на его e-mail. Реализована валидация состояния цели (уже завершена / не назначена пользователю), автоматическое обновление навыков пользователя по завершённой цели, кастомная обработка ошибок публикации.
 
-- [`GoalController`](src/main/java/school/faang/user_service/controller/goal/GoalController.java)
+- [`GoalController`](src/main/java/school/faang/user_service/controller/GoalController.java)
 - [`GoalServiceImpl`](src/main/java/school/faang/user_service/service/impl/GoalServiceImpl.java)
 - [`GoalCompletedEventPublisher`](src/main/java/school/faang/user_service/publisher/GoalCompletedEventPublisher.java)
 - [`RedisConfiguration`](src/main/java/school/faang/user_service/config/RedisConfiguration.java)
-- [`GoalCompletedEventDto`](src/main/java/school/faang/user_service/dto/publish/GoalCompletedEventDto.java)
 
 **Технологии:** Redis Pub/Sub (Jedis), Spring Data Redis, Jackson (сериализация событий), Lombok, JUnit 5 + Mockito
 
 ### 2. Загрузка, получение и удаление аватара пользователя
-Пользователь может загрузить аватар (до 5 МБ), который автоматически сохраняется в двух версиях — большая (макс. сторона 1080px) и маленькая (макс. сторона 170px). Файлы хранятся в MinIO (S3-совместимое хранилище), в PostgreSQL сохраняются только их идентификаторы. Валидация входного файла и кастомная обработка ошибок (файл не найден, ошибка обработки изображения, пользователь не найден).
+Пользователь может загрузить картинку для аватара в своём профиле (до 5 МБ), которая автоматически сохраняется в двух версиях — большая (макс. сторона 1080px) и маленькая (макс. сторона 170px). Файлы хранятся в MinIO (S3-совместимое хранилище), в PostgreSQL сохраняются только их идентификаторы. При загрузке файла автоматически происходит валидация входного файла и кастомная обработка ошибок (файл не найден, ошибка обработки изображения, пользователь не найден).
 
 - [`UserAvatarController`](src/main/java/school/faang/user_service/controller/user/UserAvatarController.java)
 - [`UserAvatarServiceImpl`](src/main/java/school/faang/user_service/service/impl/UserAvatarServiceImpl.java)
@@ -28,7 +27,7 @@
 **Технологии:** Amazon S3 SDK (MinIO), Thumbnailator (сжатие/ресайз изображений), Spring Multipart, Lombok, JUnit 5 + Mockito
 
 ### 3. Удаление просроченных премиум-доступов
-Премиум-подписка пользователя ограничена по времени. По истечении срока данные о премиум-доступе должны автоматически удаляться из БД. Реализовано через scheduled-задачу с разбиением на батчи и параллельной асинхронной обработкой через отдельный `ThreadPoolTaskExecutor`.
+У пользователей приложения CorporationX есть возможность оформить себе Премиум-подписку. Премиум-подписка пользователя ограничена по времени. По истечении срока данные о премиум-доступе автоматически удаляются из БД. Данная фича реализована через scheduled-задачу с разбиением на батчи и параллельной асинхронной обработкой через отдельный `ThreadPoolTaskExecutor`.
 
 - [`PremiumRemoverScheduler`](src/main/java/school/faang/user_service/scheduler/PremiumRemoverScheduler.java)
 - [`PremiumServiceImpl`](src/main/java/school/faang/user_service/service/premium/impl/PremiumServiceImpl.java)
@@ -38,14 +37,14 @@
 **Технологии:** Spring Scheduling (`@Scheduled`, cron), Spring Async (`@Async`, `ThreadPoolTaskExecutor`), `CompletableFuture`, Apache Commons Collections (`ListUtils.partition`), Lombok, JUnit 5 + Mockito
 
 ### 4. Менторство: получение и удаление менти/менторов
-Пользователь может выступать в роли ментора и вести менти. Реализованы операции получения списка менти/менторов и удаления связи менторства в обе стороны.
+Пользователь в рамках Проекта, в котором он участвует, может стать Ментором для младших специалистов, либо младший специалист может запросить менторство (наставничество) у более опытного специалиста. Пользователь может выступать в роли ментора и вести менти. Реализованы операции получения списка менти/менторов и удаления связи менторства в обе стороны.
 
 - [`MentorshipController`](src/main/java/school/faang/user_service/controller/mentorship/MentorshipController.java)
 - [`MentorshipServiceImpl`](src/main/java/school/faang/user_service/service/impl/MentorshipServiceImpl.java)
 
 **Технологии:** Spring Web, Spring Data JPA, MapStruct, Lombok, JUnit 5 + Mockito
 
-## CI/CD
+## CI
 
 Настроен GitHub Actions пайплайн для проверки Pull Request'ов в ветку `werewolf-master-stream8`: сборка проекта, прогон тестов, автоматический комментарий в PR при падении сборки.
 
@@ -64,17 +63,28 @@
 - Liquibase
 - JUnit 5, Mockito
 
-Конфигурация вынесена в типобезопасные `@ConfigurationProperties`-классы (`S3Properties`, `RedisConfigurationProperties`), подключаемые через `@EnableConfigurationProperties` в `UserServiceApplication`.
+Конфигурация вынесена в типобезопасные [`@ConfigurationProperties`](src/main/resources/application.yaml)-классы ([`S3Properties`](src/main/java/school/faang/user_service/config/properties/S3Properties.java), [`RedisConfigurationProperties`](src/main/java/school/faang/user_service/config/RedisConfigurationProperties.java)), подключаемые через `@EnableConfigurationProperties` в [`UserServiceApplication`](src/main/java/school/faang/user_service/UserServiceApplication.java).
 
 ## Запуск
 
-1. Поднять инфраструктуру:
+### Предварительные требования
+- Docker и Docker Compose
+- JDK 17
+
+### Шаги
+
+1. Поднять инфраструктуру (Postgres, Redis, MinIO, Kafka):
 ```bash
 git clone https://github.com/Erik18999/infra.git
 cd infra
 ./run.sh
 ```
-2. Запустить сервис (порт 8080)
+2. Склонировать и запустить сам сервис (порт 8080):
+```bash
+git clone https://github.com/Erik18999/user_service.git
+cd user_service
+```
+Открыть проект в IntelliJ IDEA и запустить [`UserServiceApplication`](src/main/java/school/faang/user_service/UserServiceApplication.java).
 
 ## Swagger UI
 
